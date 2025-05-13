@@ -51,10 +51,53 @@ const userSchema = new mongoose.Schema({
   preferences: {
     notifications: {
       email: { type: Boolean, default: true },
-      push: { type: Boolean, default: true }
+      push: { type: Boolean, default: true },
+      sms: { type: Boolean, default: true }
     },
-    language: { type: String, default: 'en' }
-  }
+    language: { type: String, default: 'en' },
+    theme: { type: String, enum: ['light', 'dark'], default: 'light' }
+  },
+  // New security fields
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: String,
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: Date,
+  sessions: [{
+    token: String,
+    device: String,
+    ip: String,
+    lastActive: Date
+  }],
+  firebaseUid: String,
+  isDefaultPassword: {
+    type: Boolean,
+    default: true
+  },
+  lastPasswordChange: Date,
+  securityQuestions: [{
+    question: String,
+    answer: String
+  }],
+  // FCM tokens for push notifications
+  fcmTokens: [{
+    token: {
+      type: String,
+      required: true
+    },
+    deviceInfo: {
+      type: Object
+    },
+    lastUsed: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, {
   timestamps: true
 });
@@ -81,6 +124,36 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   } catch (error) {
     throw error;
   }
+};
+
+// Check if account is locked
+userSchema.methods.isLocked = function() {
+  return this.lockUntil && this.lockUntil > Date.now();
+};
+
+// Increment login attempts
+userSchema.methods.incrementLoginAttempts = async function() {
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return await this.updateOne({
+      $set: { loginAttempts: 1 },
+      $unset: { lockUntil: 1 }
+    });
+  }
+  
+  const updates = { $inc: { loginAttempts: 1 } };
+  if (this.loginAttempts + 1 >= 5) {
+    updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 }; // Lock for 2 hours
+  }
+  
+  return await this.updateOne(updates);
+};
+
+// Reset login attempts
+userSchema.methods.resetLoginAttempts = async function() {
+  return await this.updateOne({
+    $set: { loginAttempts: 0 },
+    $unset: { lockUntil: 1 }
+  });
 };
 
 module.exports = mongoose.model('User', userSchema); 
