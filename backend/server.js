@@ -3,9 +3,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
-const socketIo = require('socket.io');
+const { initSocket } = require('./socket');
 const path = require('path');
 const errorHandler = require('./middleware/error');
+const { securityMiddleware, trackSession } = require('./middleware/security');
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -26,17 +27,24 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET);
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-});
+
+// Initialize socket.io
+initSocket(server);
+
+// Apply security middleware
+app.use(securityMiddleware);
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Session tracking
+app.use(trackSession);
 
 // Database connection with retry logic
 const connectDB = async () => {
@@ -65,15 +73,6 @@ if (!process.env.MONGODB_URI) {
 
 connectDB();
 
-// Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('New client connected');
-  
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
-
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
@@ -81,7 +80,21 @@ app.use('/api/polls', require('./routes/polls'));
 app.use('/api/maintenance', require('./routes/maintenance'));
 app.use('/api/amenities', require('./routes/amenities'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/notifications/push', require('./routes/notifications/push'));
+app.use('/api/notifications/sms', require('./routes/notifications/sms'));
 app.use('/api/geofencing', require('./routes/geofencing'));
+app.use('/api/security', require('./routes/security'));
+app.use('/api/societies', require('./routes/societies'));
+app.use('/api/documents', require('./routes/documents'));
+app.use('/api/disputes', require('./routes/disputes'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/support', require('./routes/support'));
+app.use('/api/exports', require('./routes/exports'));
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
 
 // Error handling middleware
 app.use(errorHandler);
