@@ -1,6 +1,8 @@
-// src/pages/AddReminder.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './AddReminder.css';
 
 const AddReminder = () => {
   const [reminder, setReminder] = useState({
@@ -22,14 +24,24 @@ const AddReminder = () => {
     const existingReminders = JSON.parse(localStorage.getItem('reminders')) || [];
     localStorage.setItem('reminders', JSON.stringify([...existingReminders, reminder]));
 
-    alert('Reminder added!');
-    navigate('/');
+    toast.success(' Reminder added successfully!', {
+      position: 'top-right',
+      autoClose: 2500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true
+    });
+
+    setTimeout(() => {
+      navigate('/');
+    }, 2600); // Wait for toast before navigating
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="add-reminder-container">
       <h2>Add New Reminder</h2>
-      <form onSubmit={handleSubmit}>
+      <form className="add-reminder-form" onSubmit={handleSubmit}>
         <input
           type="text"
           name="title"
@@ -37,27 +49,30 @@ const AddReminder = () => {
           value={reminder.title}
           onChange={handleChange}
           required
-        /><br /><br />
+        />
         <textarea
           name="description"
           placeholder="Description"
           value={reminder.description}
           onChange={handleChange}
-        /><br /><br />
+        />
         <input
           type="date"
           name="dueDate"
           value={reminder.dueDate}
           onChange={handleChange}
           required
-        /><br /><br />
-        <select name="priority" value={reminder.priority} onChange={handleChange}>
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select><br /><br />
+        />
+       <select name="priority" value={reminder.priority} onChange={handleChange}>
+  <option value="High">🔴 High</option>
+  <option value="Medium">🟡 Medium</option>
+  <option value="Low">🟢 Low</option>
+</select>
         <button type="submit">Add Reminder</button>
       </form>
+
+      {/* Toast container */}
+      <ToastContainer />
     </div>
   );
 };
