@@ -1,6 +1,6 @@
 import React from 'react';
 import ActiveVotes from './ActiveVotes';
-import MaintenanceUpdates from './MaintenanceUpdates';
+import MaintenanceUpdates from '../pages/MaintenanceUpdates';
 import Announcements from './Announcements';
 import Reminders from './Reminders';
 import SocietyByLaws from './SocietyByLaws';
