@@ -26,7 +26,7 @@ const Reminders = () => {
   return (
     <div className="card">
       <h3>REMINDERS</h3>
-      <p onClick={handleAddReminder} style={{ cursor: 'pointer', color: 'green' }}>
+      <p onClick={handleAddReminder} style={{ cursor: 'pointer'}}>
         🔔 Add a new reminder
       </p>
     </div>

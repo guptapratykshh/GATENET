@@ -40,10 +40,10 @@ const SocietyMembers = () => {
         className="society-members-image"
       />
       <p className="action add-member" onClick={handleAddMemberClick}>
-        ➕ ADD NEW MEMBERS
+        ➕ Add New Members
       </p>
       <p className="action update-member" onClick={handleUpdateMembersClick}>
-        🔄 UPDATE MEMBERS
+        🔄 Update Members
       </p>
     </div>
   );

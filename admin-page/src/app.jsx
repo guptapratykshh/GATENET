@@ -14,7 +14,8 @@
 // export default App;
 
 
-import React from 'react';
+// 
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -40,7 +41,37 @@ import ViewBookedAmenities from './pages/ViewBookedAmenities'; // Admin views al
 import AddReminder from './pages/AddReminder';  // Admin creates a reminder
 import Reminder from './components/Reminders';   // View reminders
 
+const seedDemoBookings = () => {
+  if (!localStorage.getItem('bookedAmenities')) {
+    const demoBookings = [
+      {
+        amenityName: 'Tennis Court',
+        userName: 'Alice Johnson',
+        bookingTime: '2025-05-15 10:00 AM',
+        status: 'Confirmed',
+      },
+      {
+        amenityName: 'Swimming Pool',
+        userName: 'Bob Smith',
+        bookingTime: '2025-05-16 3:00 PM',
+        status: 'Pending',
+      },
+      {
+        amenityName: 'Conference Room',
+        userName: 'Carol Lee',
+        bookingTime: '2025-05-17 1:00 PM',
+        status: 'Cancelled',
+      },
+    ];
+    localStorage.setItem('bookedAmenities', JSON.stringify(demoBookings));
+  }
+};
+
 const App = () => {
+  useEffect(() => {
+    seedDemoBookings();
+  }, []);
+
   return (
     <Router>
       <div className="app">
