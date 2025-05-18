@@ -1,14 +1,14 @@
 import Login from "./Login";
 import Signup from "./Signup";
 import Settings from "./Settings";
-// import User from "./User";
+import User from "./User";
 const App = () => {
   return (
     <div>
-     <Login/>
+     {/* <Login/> */}
      {/* <Signup/> */}
      {/* <Settings/> */}
-     {/* <User/> */}
+     <User/>
     </div>
   );
 };
